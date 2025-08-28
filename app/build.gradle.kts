@@ -6,6 +6,7 @@ plugins {
 android {
     namespace = "com.bignerdranch.android.criminalintent"
     compileSdk = 36
+    buildFeatures { viewBinding = true }
 
     defaultConfig {
         applicationId = "com.bignerdranch.android.criminalintent"
@@ -33,15 +34,20 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    buildFeatures {
+        buildFeatures { viewBinding = true }
+    }
 }
 
 dependencies {
 
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation("androidx.fragment:fragment-ktx:1.4.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
