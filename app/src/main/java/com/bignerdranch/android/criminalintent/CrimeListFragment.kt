@@ -11,14 +11,20 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeListBinding
 
 private const val TAG = "CrimeListFragment"
 
 class CrimeListFragment : Fragment() {
 
+    private var _binding: FragmentCrimeListBinding? = null
+    private val binding
+        get() = checkNotNull(_binding) {
+            "Cannot access binding because it is null. Is the view visible?"
+        }
+
     private val crimeListViewModel: CrimeListViewModel by viewModels()
 
-    private lateinit var crimeRecyclerView: RecyclerView
     private var adapter: CrimeAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,19 +37,32 @@ class CrimeListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = inflater.inflate(R.layout.fragment_crime_list, container, false)
+        _binding = FragmentCrimeListBinding.inflate(inflater, container, false)
 
-        crimeRecyclerView = view.findViewById(R.id.crime_recycler_view)
-        crimeRecyclerView.layoutManager = LinearLayoutManager(context)
+        binding.crimeRecyclerView.layoutManager = LinearLayoutManager(context)
+
+        return binding.root
+    }
+
+    // Set up RecyclerView after the view exists
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.crimeRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.crimeRecyclerView.adapter = CrimeListAdapter(crimeListViewModel.crimes)
 
         updateUI()
-        return view
     }
 
     private fun updateUI() {
         val crimes = crimeListViewModel.crimes
         adapter = CrimeAdapter(crimes)
-        crimeRecyclerView.adapter = adapter
+        binding.crimeRecyclerView.adapter = adapter
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     // --- ViewHolder ---
@@ -69,8 +88,7 @@ class CrimeListFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: CrimeHolder, position: Int) {
-            val crime = crimes[position]
-            holder.bind(crime)
+            holder.bind(crimes[position])
         }
 
         override fun getItemCount(): Int = crimes.size
