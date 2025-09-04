@@ -25,8 +25,6 @@ class CrimeListFragment : Fragment() {
 
     private val crimeListViewModel: CrimeListViewModel by viewModels()
 
-    private var adapter: CrimeAdapter? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "Total crimes: ${crimeListViewModel.crimes.size}")
@@ -38,59 +36,18 @@ class CrimeListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCrimeListBinding.inflate(inflater, container, false)
-
-        binding.crimeRecyclerView.layoutManager = LinearLayoutManager(context)
-
         return binding.root
     }
-
-    // Set up RecyclerView after the view exists
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         binding.crimeRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.crimeRecyclerView.adapter = CrimeListAdapter(crimeListViewModel.crimes)
-
-        updateUI()
-    }
-
-    private fun updateUI() {
-        val crimes = crimeListViewModel.crimes
-        adapter = CrimeAdapter(crimes)
-        binding.crimeRecyclerView.adapter = adapter
+        // Optional: binding.crimeRecyclerView.scrollToPosition(0)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    // --- ViewHolder ---
-    private inner class CrimeHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private val titleTextView: TextView = itemView.findViewById(R.id.crime_title)
-        private val dateTextView: TextView = itemView.findViewById(R.id.crime_date)
-        private val solvedCheckBox: CheckBox = itemView.findViewById(R.id.crime_solved)
-
-        fun bind(crime: Crime) {
-            titleTextView.text = crime.title
-            dateTextView.text = crime.date.toString()
-            solvedCheckBox.isChecked = crime.isSolved
-        }
-    }
-
-    // --- Adapter ---
-    private inner class CrimeAdapter(private val crimes: List<Crime>) :
-        RecyclerView.Adapter<CrimeHolder>() {
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
-            val view = layoutInflater.inflate(R.layout.list_item_crime, parent, false)
-            return CrimeHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: CrimeHolder, position: Int) {
-            holder.bind(crimes[position])
-        }
-
-        override fun getItemCount(): Int = crimes.size
     }
 }
