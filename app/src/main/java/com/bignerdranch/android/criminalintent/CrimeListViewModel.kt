@@ -6,12 +6,11 @@ import java.util.UUID
 
 class CrimeListViewModel : ViewModel() {
     // Temporary in-memory data for the chapter
-    val crimes: List<Crime> = List(20) { index ->
+    val crimes: List<Crime> = List(20) { i ->
         Crime(
-            id = UUID.randomUUID(),
-            title = "Crime #$index",
-            date = Date(),
-            isSolved = index % 2 == 0
+            title = "Crime #$i",
+            isSolved = i % 2 == 0,
+            requiresPolice = i % 5 == 0   // every 5th one is “serious”, for example
         )
     }
 }
