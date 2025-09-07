@@ -1,43 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
-    android:padding="16dp"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp">
 
-    <!-- Text block (title + date) -->
+    <!-- Left column: title + date -->
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/crime_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="Crime title"
-            android:paddingBottom="4dp" />
+            tools:text="Crime #12" />
 
         <TextView
             android:id="@+id/crime_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Crime Date"/>
+            tools:text="Wed May 11 11:56 EST 2022" />
     </LinearLayout>
 
-    <!-- Solved indicator (display-only for now) -->
-    <CheckBox
-        android:id="@+id/crime_solved"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:focusable="false"
-        android:clickable="false"
-        android:text="@string/crime_solved_label" />
+    <!-- Right: solved icon (hidden when not solved) -->
+    <ImageView
+        android:id="@+id/crime_solved_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_solved"
+        android:contentDescription="@string/crime_solved_label"
+        android:visibility="gone"
+        tools:visibility="visible" />
 </LinearLayout>

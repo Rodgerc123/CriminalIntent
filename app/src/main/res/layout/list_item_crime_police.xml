@@ -1,29 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
-    android:padding="16dp"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp">
 
+    <!-- Left column: title + date -->
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/crime_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end" />
+            tools:text="Crime #10 (police)" />
 
         <TextView
             android:id="@+id/crime_date"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            tools:text="Wed May 11 11:56 EST 2022" />
     </LinearLayout>
 
     <Button
@@ -31,5 +35,4 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/contact_police" />
-
 </LinearLayout>
