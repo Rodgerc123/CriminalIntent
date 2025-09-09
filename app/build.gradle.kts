@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("org.jetbrains.kotlin.kapt") // <-- needed for Room's annotation processor
 }
 
 android {
@@ -40,6 +41,17 @@ android {
 }
 
 dependencies {
+
+    // --- Room (STABLE) ---
+    val roomVersion = "2.7.2"
+    implementation("androidx.room:room-ktx:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
+
+    // --- Coroutines ---
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+
+    // --- Lifecycle (for collecting flows safely) ---
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
 
     implementation("androidx.fragment:fragment-ktx:1.8.3")
     debugImplementation("androidx.fragment:fragment-testing:1.8.3")

@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bignerdranch.android.criminalintent.databinding.ListItemCrimeBinding
 import com.bignerdranch.android.criminalintent.databinding.ListItemCrimePoliceBinding
+import com.bignerdranch.android.criminalintent.util.toAuDisplayString
 import java.util.UUID
 
 private const val VIEW_TYPE_NORMAL = 0
@@ -42,8 +43,11 @@ class CrimeNormalHolder(
     override fun bind(crime: Crime) {
         boundCrime = crime
         binding.crimeTitle.text = crime.title
-        binding.crimeDate.text = crime.date.toString()
-        // Show the solved icon only when solved
+        // ⬇️ AU date format (e.g., "11 May 2022")
+        binding.crimeDate.text = crime.date.toAuDisplayString(
+            binding.root.context,
+            withWeekday = false
+        )
         binding.crimeSolvedIcon.isVisible = crime.isSolved
     }
 }
@@ -77,7 +81,10 @@ class CrimePoliceHolder(
     override fun bind(crime: Crime) {
         boundCrime = crime
         binding.crimeTitle.text = crime.title
-        binding.crimeDate.text = crime.date.toString()
+        binding.crimeDate.text = crime.date.toAuDisplayString(
+            binding.root.context,
+            withWeekday = false
+        )
     }
 }
 
@@ -114,7 +121,9 @@ class CrimeListAdapter(
     }
 
     override fun onBindViewHolder(holder: CrimeHolder, position: Int) {
-        holder.bind(crimes[position])
+        val item = crimes[position]
+        android.util.Log.d("CrimeListAdapter", "bind pos=$position title=${item.title}")
+        holder.bind(item)
     }
 
     override fun getItemCount(): Int = crimes.size
