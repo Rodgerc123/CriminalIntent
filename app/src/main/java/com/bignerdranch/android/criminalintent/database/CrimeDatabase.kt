@@ -12,11 +12,10 @@ import com.bignerdranch.android.criminalintent.Crime
  */
 @Database(
     entities = [Crime::class],
-    version = 1,
-    exportSchema = true // good practice for migrations later
+    version = 2,                 // bumped from 1 → 2
+    exportSchema = true
 )
 @TypeConverters(CrimeTypeConverters::class)
 abstract class CrimeDatabase : RoomDatabase() {
-    // Room generates the implementation and returns it here
     abstract fun crimeDao(): CrimeDao
 }

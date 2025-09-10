@@ -122,7 +122,6 @@ class CrimeListAdapter(
 
     override fun onBindViewHolder(holder: CrimeHolder, position: Int) {
         val item = crimes[position]
-        android.util.Log.d("CrimeListAdapter", "bind pos=$position title=${item.title}")
         holder.bind(item)
     }
 

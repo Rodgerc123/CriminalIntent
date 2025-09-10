@@ -21,7 +21,7 @@ import java.util.UUID
 interface CrimeDao {
 
     /** Stream all crimes, newest first. */
-    @Query("SELECT * FROM crimes ORDER BY date DESC")
+    @Query("SELECT * FROM crimes ORDER BY date ASC")
     fun getCrimes(): Flow<List<Crime>>
 
     /** Stream one crime by id (null if it doesn’t exist). */
