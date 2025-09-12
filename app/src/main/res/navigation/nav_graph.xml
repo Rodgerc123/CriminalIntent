@@ -1,30 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Minimal graph: list -> detail -->
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
     app:startDestination="@id/crimeListFragment">
 
-    <!-- Source screen -->
     <fragment
         android:id="@+id/crimeListFragment"
         android:name="com.bignerdranch.android.criminalintent.CrimeListFragment"
         android:label="Crimes">
-
-        <!-- Action must live INSIDE the source fragment -->
         <action
             android:id="@+id/action_crimeListFragment_to_crimeDetailFragment"
             app:destination="@id/crimeDetailFragment" />
     </fragment>
 
-    <!-- Destination screen -->
     <fragment
         android:id="@+id/crimeDetailFragment"
         android:name="com.bignerdranch.android.criminalintent.CrimeDetailFragment"
         android:label="Crime Detail">
-        <!-- Optional argument to pass a selected id (string form of UUID) -->
+        <!-- Safe Args argument: REQUIRED string (we pass UUID as a string) -->
         <argument
             android:name="crimeId"
-            app:argType="string"
-            app:nullable="true" />
+            app:argType="string" />
+        <!-- TIP: do NOT add android:nullable here; omit it to make it required -->
     </fragment>
 </navigation>
