@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Custom Application initializes CrimeRepository -->
+    <!-- Permissions: put here, as direct children of <manifest> -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- If you later switch to ACTION_CALL (not recommended), add:
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    -->
+
     <application
         android:name=".CriminalIntentApplication"
         android:allowBackup="true"
@@ -19,6 +24,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Optional: add when you implement camera/photo with FileProvider
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+        -->
 
     </application>
 </manifest>

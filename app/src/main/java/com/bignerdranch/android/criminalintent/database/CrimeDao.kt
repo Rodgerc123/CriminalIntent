@@ -5,6 +5,8 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
+import androidx.room.Upsert
 import com.bignerdranch.android.criminalintent.Crime
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
@@ -19,20 +21,30 @@ import java.util.UUID
  */
 @Dao
 interface CrimeDao {
-
-    /** Stream all crimes, newest first. */
-    @Query("SELECT * FROM crimes ORDER BY date ASC")
+    @Query("SELECT * FROM crime")
     fun getCrimes(): Flow<List<Crime>>
 
-    /** Stream one crime by id (null if it doesn’t exist). */
-    @Query("SELECT * FROM crimes WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM crime WHERE id = :id LIMIT 1")
     fun getCrime(id: UUID): Flow<Crime?>
 
-    /** Insert or update a crime (primary key is id). */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Query("DELETE FROM crime WHERE id = :id")
+    suspend fun deleteById(id: UUID)
+
+    // You can keep these if used elsewhere
+    @Insert
+    suspend fun insertCrime(crime: Crime)
+
+    @Update
+    suspend fun updateCrime(crime: Crime)
+
+    // >>>New: true upsert (insert or update on conflict)
+    @Upsert
     suspend fun upsert(crime: Crime)
 
-    /** Delete a crime row. */
+    // (optional convenience)
+    @Upsert
+    suspend fun upsert(crimes: List<Crime>)
+
     @Delete
     suspend fun delete(crime: Crime)
 }

@@ -5,4 +5,15 @@
     <string name="crime_details_label">Details</string>
     <string name="crime_solved_label">Solved</string>
     <string name="contact_police">Contact police</string>
+    <string name="share_crime_report">Share report</string>
+    <string name="choose_suspect">Choose suspect</string>
+    <string name="call_suspect">Call suspect</string>
+    <string name="crime_report_subject">Crime Report</string>
+    <string name="crime_report">
+    Crime: %1$s
+    \nDate: %2$s
+    \nSolved: %3$s
+    \nSuspect: %4$s
+</string>
+    <string name="no_suspect">No suspect</string>
 </resources>

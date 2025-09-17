@@ -45,12 +45,10 @@ class CrimeListFragment : Fragment() {
                     binding.crimeRecyclerView.adapter = CrimeListAdapter(
                         crimes = list
                     ) { crimeId ->
-                        // Navigate to detail with the selected id as an argument
-                        val bundle = bundleOf("crimeId" to crimeId.toString())
-                        findNavController().navigate(
-                            R.id.action_crimeListFragment_to_crimeDetailFragment,
-                            bundle
-                        )
+                        // >>> Safe Args navigation (no R.id.action_* needed)
+                        val action = CrimeListFragmentDirections
+                            .actionCrimeListFragmentToCrimeDetailFragment(crimeId.toString())
+                        findNavController().navigate(action)
                     }
                 }
             }
