@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -13,6 +12,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeListBinding
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class CrimeListFragment : Fragment() {
@@ -35,21 +35,21 @@ class CrimeListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // RecyclerView layout
-        binding.crimeRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        // 1) Create the adapter ONCE (moved OUT of the collector)
+        val adapter = CrimeListAdapter { crimeId ->
+            val action = CrimeListFragmentDirections
+                .actionCrimeListFragmentToCrimeDetailFragment(crimeId.toString())
+            findNavController().navigate(action)
+        }
 
-        // Collect the flow while the view is STARTED and update the adapter
+        binding.crimeRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.crimeRecyclerView.adapter = adapter
+
+        // 2) Collect updates and SUBMIT the new list (no adapter recreation)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 crimeListViewModel.crimes.collect { list ->
-                    binding.crimeRecyclerView.adapter = CrimeListAdapter(
-                        crimes = list
-                    ) { crimeId ->
-                        // >>> Safe Args navigation (no R.id.action_* needed)
-                        val action = CrimeListFragmentDirections
-                            .actionCrimeListFragmentToCrimeDetailFragment(crimeId.toString())
-                        findNavController().navigate(action)
-                    }
+                    adapter.submitList(list) // 👈 this replaces recreating the adapter
                 }
             }
         }
