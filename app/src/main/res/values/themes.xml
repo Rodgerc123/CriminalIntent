@@ -1,9 +1,5 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- App theme -->
-    <style name="Theme.CriminalIntent" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Example overrides that can be added later:
-        <item name="android:statusBarColor">?attr/colorSurface</item>
-        <item name="android:navigationBarColor">?attr/colorSurface</item>
-        -->
-    </style>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Keep NoActionBar so we can supply our own Toolbar -->
+    <style name="Theme.CriminalIntent" parent="Theme.Material3.DayNight.NoActionBar"/>
 </resources>

@@ -42,8 +42,11 @@ class CrimeListFragment : Fragment() {
             findNavController().navigate(action)
         }
 
+
         binding.crimeRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.crimeRecyclerView.adapter = adapter
+
+        addMenu()
 
         // 2) Collect updates and SUBMIT the new list (no adapter recreation)
         viewLifecycleOwner.lifecycleScope.launch {
@@ -58,5 +61,33 @@ class CrimeListFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun addMenu() {
+        (requireActivity() as androidx.core.view.MenuHost).addMenuProvider(
+            object : androidx.core.view.MenuProvider {
+                override fun onCreateMenu(menu: android.view.Menu, menuInflater: android.view.MenuInflater) {
+                    menuInflater.inflate(R.menu.menu_crime_list, menu)
+                }
+
+                override fun onMenuItemSelected(menuItem: android.view.MenuItem): Boolean {
+                    return when (menuItem.itemId) {
+                        R.id.menu_add_crime -> {
+                            val newCrime = Crime(title = "", isSolved = false)
+                            viewLifecycleOwner.lifecycleScope.launch {
+                                CrimeRepository.get().upsert(newCrime)
+                                val action = CrimeListFragmentDirections
+                                    .actionCrimeListFragmentToCrimeDetailFragment(newCrime.id.toString())
+                                findNavController().navigate(action)
+                            }
+                            true
+                        }
+                        else -> false
+                    }
+                }
+            },
+            viewLifecycleOwner,
+            androidx.lifecycle.Lifecycle.State.STARTED
+        )
     }
 }

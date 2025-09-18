@@ -9,6 +9,7 @@
     <string name="choose_suspect">Choose suspect</string>
     <string name="call_suspect">Call suspect</string>
     <string name="crime_report_subject">Crime Report</string>
+    <string name="add_crime">Add Crime</string>
     <string name="crime_report">
     Crime: %1$s
     \nDate: %2$s
