@@ -10,11 +10,16 @@
     <string name="call_suspect">Call suspect</string>
     <string name="crime_report_subject">Crime Report</string>
     <string name="add_crime">Add Crime</string>
-    <string name="crime_report">
-    Crime: %1$s
-    \nDate: %2$s
-    \nSolved: %3$s
-    \nSuspect: %4$s
-</string>
+    <string name="crime_date_label">Date</string>
+    <string name="contacts_permission_denied">Contacts permission denied</string>
+    <string name="contacts_permission_rationale">Contacts permission is needed to pick a suspect</string>
+    <string name="no_phone_for_contact">That contact has no phone number</string>
     <string name="no_suspect">No suspect</string>
+    <string name="crime_report">
+        Crime: %1$s
+        \nDate: %2$s
+        \nSolved: %3$s
+        \nSuspect: %4$s
+    </string>
+
 </resources>

@@ -35,24 +35,26 @@ class CrimeListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1) Create the adapter ONCE (moved OUT of the collector)
         val adapter = CrimeListAdapter { crimeId ->
+            android.util.Log.d("CrimeListFragment", "Navigate on click: $crimeId")
             val action = CrimeListFragmentDirections
                 .actionCrimeListFragmentToCrimeDetailFragment(crimeId.toString())
             findNavController().navigate(action)
         }
-
-
         binding.crimeRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.crimeRecyclerView.adapter = adapter
 
         addMenu()
 
-        // 2) Collect updates and SUBMIT the new list (no adapter recreation)
+        // Seed on first run if empty (no-op when data exists)
+        viewLifecycleOwner.lifecycleScope.launch {
+            crimeListViewModel.seedIfEmpty()
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 crimeListViewModel.crimes.collect { list ->
-                    adapter.submitList(list) // 👈 this replaces recreating the adapter
+                    adapter.submitList(list)
                 }
             }
         }
