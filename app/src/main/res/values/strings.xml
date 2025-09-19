@@ -15,6 +15,8 @@
     <string name="contacts_permission_rationale">Contacts permission is needed to pick a suspect</string>
     <string name="no_phone_for_contact">That contact has no phone number</string>
     <string name="no_suspect">No suspect</string>
+    <string name="error_title_required">Please enter a crime title</string>
+    <string name="toast_title_required">Describe the crime before going back</string>
     <string name="crime_report">
         Crime: %1$s
         \nDate: %2$s

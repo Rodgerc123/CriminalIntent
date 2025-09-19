@@ -10,18 +10,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.fragment.app.setFragmentResultListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
+import androidx.navigation.fragment.findNavController
 import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeDetailBinding
 import kotlinx.coroutines.launch
 import java.text.DateFormat
+import java.util.Date
 import java.util.UUID
 
 class CrimeDetailFragment : Fragment() {
@@ -31,6 +35,8 @@ class CrimeDetailFragment : Fragment() {
 
     private var _binding: FragmentCrimeDetailBinding? = null
     private val binding get() = checkNotNull(_binding) { "Binding is null (view not visible)" }
+
+    private var isProgrammaticTitleUpdate = false
 
     // --- permissions & activity results ---
 
@@ -76,67 +82,102 @@ class CrimeDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Observe and render the crime from the ViewModel
+        // --- Observe DB state and render UI ---
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.crime.collect { loaded ->
-                    loaded ?: return@collect
-                    binding.apply {
-                        crimeTitle.setText(loaded.title)
-                        crimeDate.text = DateFormat.getDateInstance(DateFormat.MEDIUM).format(loaded.date)
-                        crimeSolved.isChecked = loaded.isSolved
+                    if (loaded == null) return@collect
+
+                    // Safe text update (prevents cursor jumping)
+                    val edit = binding.crimeTitle
+                    val currentText = edit.text?.toString().orEmpty()
+                    if (currentText != loaded.title) {
+                        isProgrammaticTitleUpdate = true
+                        val oldSel = edit.selectionStart
+                        edit.text?.replace(0, edit.text?.length ?: 0, loaded.title)
+                        val newSel = loaded.title.length.coerceAtMost(oldSel.coerceAtLeast(0))
+                        edit.setSelection(newSel)
+                        isProgrammaticTitleUpdate = false
                     }
+
+                    binding.crimeDate.text =
+                        java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM).format(loaded.date)
+                    binding.crimeSolved.isChecked = loaded.isSolved
                     updateSuspectUi(loaded.suspect, loaded.suspectPhone)
                 }
             }
         }
 
-        // Title & Solved persist immediately via VM
-        binding.crimeTitle.doOnTextChanged { text, _, _, _ ->
-            viewModel.updateTitle(text?.toString().orEmpty())
+        // Receive date picked from DatePickerFragment
+        childFragmentManager.setFragmentResultListener(
+            DatePickerFragment.REQUEST_KEY,
+            viewLifecycleOwner
+        ) { _, bundle ->
+            val millis = bundle.getLong(DatePickerFragment.BUNDLE_KEY_DATE_MILLIS)
+            val picked = Date(millis)
+            // Persist via ViewModel and UI will refresh via your collector
+            viewModel.updateDate(picked)
         }
-        binding.crimeSolved.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.updateSolved(isChecked)
-        }
-        binding.crimeDate.isEnabled = false // (matches book for now)
 
-        // Share
+        // --- Static widget config ---
+        binding.crimeDate.isEnabled = true
+        binding.crimeDate.setOnClickListener {
+            // Use the current crime date if present; otherwise "now"
+            val initial = viewModel.crime.value?.date ?: Date()
+            DatePickerFragment.newInstance(initial)
+                .show(childFragmentManager, "DATE_PICKER")
+        }
+        // --- Listeners that push changes to VM (do NOT reference `loaded` here) ---
+        binding.crimeTitle.doOnTextChanged { text, _, _, _ ->
+            if (!isProgrammaticTitleUpdate) {
+                viewModel.updateTitle(text?.toString().orEmpty())
+            }
+        }
+        binding.crimeSolved.setOnCheckedChangeListener { _, checked ->
+            viewModel.updateSolved(checked)
+        }
+
+        // Share report (read current from VM, not `loaded`)
         binding.shareReport.setOnClickListener {
             val current = viewModel.crime.value
             val reportText = buildCrimeReport(current)
-            val sendIntent = Intent(Intent.ACTION_SEND).apply {
+            val send = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, reportText)
                 putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject))
             }
-            startActivity(Intent.createChooser(sendIntent, getString(R.string.share_crime_report)))
+            startActivity(Intent.createChooser(send, getString(R.string.share_crime_report)))
         }
 
-        // Choose suspect (runtime permission)
-        binding.chooseSuspect.setOnClickListener {
-            val permission = Manifest.permission.READ_CONTACTS
-            val granted = ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED
-            if (granted) {
-                pickContact.launch(null)
-            } else if (shouldShowRequestPermissionRationale(permission)) {
-                Toast.makeText(requireContext(), getString(R.string.contacts_permission_rationale), Toast.LENGTH_LONG).show()
-                requestReadContacts.launch(permission)
-            } else {
-                requestReadContacts.launch(permission)
-            }
-        }
+        // Choose suspect (keep your existing permission + picker flow)
 
-        // Call suspect (ACTION_DIAL)
+        // Call suspect (read current from VM)
         binding.callSuspect.setOnClickListener {
             val phone = viewModel.crime.value?.suspectPhone
             if (phone.isNullOrBlank()) {
                 Toast.makeText(requireContext(), getString(R.string.no_phone_for_contact), Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+            } else {
+                startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${Uri.encode(phone)}")))
             }
-            startActivity(Intent(Intent.ACTION_DIAL).apply {
-                data = Uri.parse("tel:${Uri.encode(phone)}")
-            })
         }
+
+        // --- Back block: no untitled crimes ---
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    val titleNow = binding.crimeTitle.text?.toString()?.trim().orEmpty()
+                    if (titleNow.isBlank()) {
+                        binding.crimeTitle.error = getString(R.string.error_title_required)
+                        binding.crimeTitle.requestFocus()
+                        Toast.makeText(requireContext(), getString(R.string.toast_title_required), Toast.LENGTH_SHORT).show()
+                    } else {
+                        viewModel.updateTitle(titleNow) // defensive
+                        findNavController().popBackStack()
+                    }
+                }
+            }
+        )
     }
 
     override fun onDestroyView() {

@@ -20,6 +20,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSupportNavigateUp(): Boolean {
         val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        return navHost.navController.navigateUp() || super.onSupportNavigateUp()
+        val nav = navHost.navController
+        return if (nav.currentDestination?.id == R.id.crimeDetailFragment) {
+            // Let CrimeDetailFragment's OnBackPressedCallback decide
+            onBackPressedDispatcher.onBackPressed()
+            true
+        } else {
+            nav.navigateUp() || super.onSupportNavigateUp()
+        }
     }
 }

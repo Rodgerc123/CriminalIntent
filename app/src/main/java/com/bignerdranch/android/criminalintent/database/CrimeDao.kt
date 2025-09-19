@@ -25,7 +25,7 @@ interface CrimeDao {
     fun getCrimes(): Flow<List<Crime>>
 
     @Query("SELECT * FROM crime WHERE id = :id LIMIT 1")
-    fun getCrime(id: UUID): Flow<Crime?>
+    fun getCrime(id: UUID): kotlinx.coroutines.flow.Flow<Crime?>
 
     @Query("DELETE FROM crime WHERE id = :id")
     suspend fun deleteById(id: UUID)

@@ -25,8 +25,9 @@ class CrimeRepository private constructor(context: Context) {
 
     // --- Read APIs ---
     fun getCrimes(): Flow<List<Crime>> = crimeDao.getCrimes()
-    fun getCrime(id: UUID): Flow<Crime?> = crimeDao.getCrime(id)
-
+    fun getCrime(id: UUID): kotlinx.coroutines.flow.Flow<Crime?> {
+        return crimeDao.getCrime(id)
+    }
     // --- Write APIs ---
     suspend fun upsert(crime: Crime) = crimeDao.upsert(crime)
     suspend fun upsert(crimes: List<Crime>) = crimeDao.upsert(crimes)
