@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
@@ -25,6 +26,7 @@ import androidx.navigation.fragment.findNavController
 import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeDetailBinding
 import kotlinx.coroutines.launch
 import java.text.DateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 
@@ -100,8 +102,11 @@ class CrimeDetailFragment : Fragment() {
                         isProgrammaticTitleUpdate = false
                     }
 
-                    binding.crimeDate.text =
-                        java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM).format(loaded.date)
+                    binding.crimeDate.text = DateFormat.getDateTimeInstance(
+                        DateFormat.MEDIUM,
+                        DateFormat.SHORT
+                    ).format(loaded.date)
+
                     binding.crimeSolved.isChecked = loaded.isSolved
                     updateSuspectUi(loaded.suspect, loaded.suspectPhone)
                 }
@@ -122,11 +127,32 @@ class CrimeDetailFragment : Fragment() {
         // --- Static widget config ---
         binding.crimeDate.isEnabled = true
         binding.crimeDate.setOnClickListener {
-            // Use the current crime date if present; otherwise "now"
-            val initial = viewModel.crime.value?.date ?: Date()
-            DatePickerFragment.newInstance(initial)
-                .show(childFragmentManager, "DATE_PICKER")
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.edit_date_or_time)
+                .setItems(arrayOf(getString(R.string.change_date), getString(R.string.change_time))) { _, which ->
+                    val current = viewModel.crime.value?.date ?: Date()
+                    when (which) {
+                        0 -> DatePickerFragment.newInstance(current)
+                            .show(childFragmentManager, "DATE_PICKER")
+                        1 -> TimePickerFragment.newInstance(current.time)
+                            .show(childFragmentManager, "TIME_PICKER")
+                    }
+                }
+                .show()
         }
+
+        // Receive time picked from TimePickerFragment
+        childFragmentManager.setFragmentResultListener(
+            TimePickerFragment.REQUEST_KEY,
+            viewLifecycleOwner
+        ) { _, bundle ->
+            val hour = bundle.getInt(TimePickerFragment.KEY_HOUR)
+            val minute = bundle.getInt(TimePickerFragment.KEY_MINUTE)
+            val base = viewModel.crime.value?.date ?: Date()
+            val combined = combineDateWithTime(base, hour, minute)
+            viewModel.updateDate(combined) // optimistic update will refresh UI and persist
+        }
+
         // --- Listeners that push changes to VM (do NOT reference `loaded` here) ---
         binding.crimeTitle.doOnTextChanged { text, _, _, _ ->
             if (!isProgrammaticTitleUpdate) {
@@ -213,6 +239,15 @@ class CrimeDetailFragment : Fragment() {
                 c.getString(idx)
             } else null
         }
+
+    private fun combineDateWithTime(base: Date, hour: Int, minute: Int): Date {
+        val cal = Calendar.getInstance().apply { time = base }
+        cal.set(Calendar.HOUR_OF_DAY, hour)
+        cal.set(Calendar.MINUTE, minute)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        return cal.time
+    }
 
     private fun queryFirstPhoneNumber(contactUri: Uri): String? {
         val contactId = requireContext().contentResolver.query(

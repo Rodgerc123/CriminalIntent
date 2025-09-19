@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Title -->
+    <!-- Title (top-left), constrained to Solved on the right -->
     <EditText
         android:id="@+id/crimeTitle"
         android:layout_width="0dp"
@@ -14,28 +14,27 @@
         android:hint="@string/crime_title_hint"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toStartOf="@id/crimeSolved"
+        android:layout_marginEnd="8dp"/>
 
-    <!-- Date (disabled for now) -->
-    <Button
-        android:id="@+id/crimeDate"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/crime_date_label"
-        android:enabled="false"
-        app:layout_constraintTop_toBottomOf="@id/crimeTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp"/>
-
-    <!-- Solved -->
+    <!-- Solved (top-right) -->
     <CheckBox
         android:id="@+id/crimeSolved"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/crime_solved_label"
-        app:layout_constraintTop_toBottomOf="@id/crimeDate"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Date button (shows date + time; opens a chooser for Date/Time pickers) -->
+    <Button
+        android:id="@+id/crimeDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/crime_date_label"
+        app:layout_constraintTop_toBottomOf="@id/crimeTitle"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp"/>
 
     <!-- Share report -->
@@ -44,7 +43,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/share_crime_report"
-        app:layout_constraintTop_toBottomOf="@id/crimeSolved"
+        app:layout_constraintTop_toBottomOf="@id/crimeDate"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>
