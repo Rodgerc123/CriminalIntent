@@ -3,6 +3,8 @@ package com.bignerdranch.android.criminalintent
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
@@ -19,6 +21,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -38,6 +41,17 @@ import java.util.UUID
 private const val DATE_FORMAT = "EEE, MMM, dd"
 
 class CrimeDetailFragment : Fragment() {
+
+    private var photoFile: java.io.File? = null
+    private var photoUri: android.net.Uri? = null
+
+    // Activity Result: TakePicture (writes to our Uri)
+    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            // Update gallery ImageView
+            updatePhotoView()
+        }
+    }
 
     private val args: CrimeDetailFragmentArgs by navArgs()
     private val viewModel: CrimeDetailViewModel by viewModels()
@@ -121,6 +135,16 @@ class CrimeDetailFragment : Fragment() {
                 viewModel.crime.collect { loaded ->
                     if (loaded == null) return@collect
 
+                    // Prepare photo storage & content Uri for this crime
+                    photoFile = CrimeRepository.get().getPhotoFile(loaded, requireContext())
+                    photoUri = FileProvider.getUriForFile(
+                        requireContext(),
+                        "${requireContext().packageName}.fileprovider",
+                        photoFile!!
+                    )
+
+                    updatePhotoView()  // show existing photo if we have one
+
                     // Safe text update (prevents cursor jumping)
                     val edit = binding.crimeTitle
                     val currentText = edit.text?.toString().orEmpty()
@@ -195,6 +219,26 @@ class CrimeDetailFragment : Fragment() {
         }
         binding.crimeSolved.setOnCheckedChangeListener { _, checked ->
             viewModel.updateSolved(checked)
+        }
+
+        binding.takePhoto.setOnClickListener {
+            val uri = photoUri ?: return@setOnClickListener
+            // Grant camera apps temporary write permission to our Uri (defensive)
+            requireActivity().packageManager.queryIntentActivities(
+                android.content.Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE),
+                PackageManager.MATCH_DEFAULT_ONLY
+            ).forEach { resolveInfo ->
+                requireContext().grantUriPermission(
+                    resolveInfo.activityInfo.packageName,
+                    uri,
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
+
+            // Launch camera to write into our Uri
+            takePicture.launch(uri)
+
+            // Revoke after return (ActivityResult callback) — handled below in updatePhotoView()
         }
 
         // Share report (read current from VM, not `loaded`)
@@ -292,6 +336,40 @@ class CrimeDetailFragment : Fragment() {
     }
 
     // --- helpers ---
+
+    private fun updatePhotoView() {
+        val file = photoFile ?: return
+        if (!file.exists()) {
+            binding.crimePhoto.setImageDrawable(null)
+            return
+        }
+
+        // Decode a downsampled bitmap to fit the ImageView bounds
+        val targetW = binding.crimePhoto.width.takeIf { it > 0 } ?: binding.crimePhoto.measuredWidth
+        val targetH = binding.crimePhoto.height.takeIf { it > 0 } ?: 200 // fallback height
+
+        val opts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.path, opts)
+        var sample = 1
+        if (targetW > 0 && targetH > 0) {
+            val scaleW = opts.outWidth / targetW
+            val scaleH = opts.outHeight / targetH
+            val scale = maxOf(1, minOf(if (scaleW == 0) 1 else scaleW, if (scaleH == 0) 1 else scaleH))
+            sample = scale.coerceAtLeast(1)
+        }
+
+        val decodeOpts = BitmapFactory.Options().apply { inSampleSize = sample }
+        val bitmap: Bitmap? = BitmapFactory.decodeFile(file.path, decodeOpts)
+        binding.crimePhoto.setImageBitmap(bitmap)
+
+        // Revoke Uri permission defensively after capture
+        photoUri?.let {
+            requireContext().revokeUriPermission(
+                it,
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        }
+    }
 
 
     private fun updateSuspectUi(name: String?, phone: String?) {

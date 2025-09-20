@@ -14,4 +14,7 @@ data class Crime(
     val suspect: String = "",          // <-- default (book uses empty string)
     val suspectPhone: String? = null,  // <-- keep nullable default
     val requiresPolice: Boolean = false
-)
+) {
+    val photoFileName: String
+        get() = "IMG_${id}.jpg"
+}

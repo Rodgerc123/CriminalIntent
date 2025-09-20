@@ -15,7 +15,7 @@
     <string name="contacts_permission_denied">Contacts permission denied</string>
     <string name="contacts_permission_rationale">Contacts permission is needed to pick a suspect</string>
     <string name="crime_date_label">Date</string>
-    <string name="crime_time_label">Time</string>
+    <string name="crime_photo_content_desc">Crime photo</string>
     <string name="crime_report">%1$s! The crime was discovered on %2$s. %3$s, and %4$s</string>
     <string name="crime_report_subject">Crime Report</string>
     <string name="crime_report_solved">The case is solved</string>
@@ -24,6 +24,7 @@
     <string name="crime_report_suspect">the suspect is %s.</string>
     <string name="crime_report_text">@string/share_crime_report</string>
     <string name="crime_suspect_text">@string/choose_suspect</string>
+    <string name="crime_time_label">Time</string>
     <string name="crime_title_hint">Enter a title for the crime.</string>
     <string name="crime_title_label">Title</string>
     <string name="crime_details_label">Details</string>
@@ -38,6 +39,7 @@
     <string name="no_suspect">No suspect</string>
     <string name="send_report">Send crime report via</string>
     <string name="share_crime_report">Share report</string>
+    <string name="take_photo">Take Photo</string>
     <string name="toast_title_required">Describe the crime before going back</string>
 
 

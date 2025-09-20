@@ -57,6 +57,13 @@ class CrimeRepository private constructor(context: Context) {
     // Keep a DAO reference
     private val crimeDao: CrimeDao = database.crimeDao()
 
+    fun getPhotoFile(crime: Crime, context: Context): java.io.File {
+        // Use app-specific external pictures dir (no permission needed)
+        val dir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
+            ?: context.filesDir // fallback
+        return java.io.File(dir, crime.photoFileName)
+    }
+
     // --- Read APIs ---
     fun getCrimes(): Flow<List<Crime>> = crimeDao.getCrimes()
     fun getCrime(id: UUID): kotlinx.coroutines.flow.Flow<Crime?> = crimeDao.getCrime(id)
