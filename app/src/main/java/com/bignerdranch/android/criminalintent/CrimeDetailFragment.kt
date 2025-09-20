@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -29,10 +30,12 @@ import androidx.navigation.fragment.navArgs
 import androidx.navigation.fragment.findNavController
 import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeDetailBinding
 import kotlinx.coroutines.launch
-import java.text.DateFormat
 import java.util.Calendar
 import java.util.Date
+import java.text.DateFormat as JavaDateFormat
 import java.util.UUID
+
+private const val DATE_FORMAT = "EEE, MMM, dd"
 
 class CrimeDetailFragment : Fragment() {
 
@@ -68,6 +71,30 @@ class CrimeDetailFragment : Fragment() {
             // Persist via ViewModel; UI will update from the collector
             viewModel.updateSuspect(suspectName, phone)
         }
+
+    private fun getCrimeReport(crime: Crime): String {
+        val solvedString = if (crime.isSolved) {
+            getString(R.string.crime_report_solved)
+        } else {
+            getString(R.string.crime_report_unsolved)
+        }
+
+        val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
+
+        val suspectText = if (crime.suspect.isBlank()) {
+            getString(R.string.crime_report_no_suspect)
+        } else {
+            getString(R.string.crime_report_suspect, crime.suspect)
+        }
+
+        return getString(
+            R.string.crime_report,
+            crime.title,
+            dateString,
+            solvedString,
+            suspectText
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,9 +133,9 @@ class CrimeDetailFragment : Fragment() {
                         isProgrammaticTitleUpdate = false
                     }
 
-                    binding.crimeDate.text = DateFormat.getDateTimeInstance(
-                        DateFormat.MEDIUM,
-                        DateFormat.SHORT
+                    binding.crimeDate.text = JavaDateFormat.getDateTimeInstance(
+                        JavaDateFormat.MEDIUM,
+                        JavaDateFormat.SHORT
                     ).format(loaded.date)
 
                     binding.crimeSolved.isChecked = loaded.isSolved
@@ -172,14 +199,14 @@ class CrimeDetailFragment : Fragment() {
 
         // Share report (read current from VM, not `loaded`)
         binding.shareReport.setOnClickListener {
-            val current = viewModel.crime.value
-            val reportText = buildCrimeReport(current)
+            val c = viewModel.crime.value ?: return@setOnClickListener
+            val reportText = getCrimeReport(c)
             val send = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, reportText)
                 putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject))
             }
-            startActivity(Intent.createChooser(send, getString(R.string.share_crime_report)))
+            startActivity(Intent.createChooser(send, getString(R.string.send_report)))
         }
 
         // Choose suspect (permission + picker)
@@ -266,13 +293,6 @@ class CrimeDetailFragment : Fragment() {
 
     // --- helpers ---
 
-    private fun buildCrimeReport(current: Crime?): String {
-        val c = current ?: return ""
-        val solvedString = if (c.isSolved) getString(android.R.string.yes) else getString(android.R.string.no)
-        val dateString = DateFormat.getDateInstance(DateFormat.MEDIUM).format(c.date)
-        val suspect = if (c.suspect.isBlank()) getString(R.string.no_suspect) else c.suspect
-        return getString(R.string.crime_report, c.title, dateString, solvedString, suspect)
-    }
 
     private fun updateSuspectUi(name: String?, phone: String?) {
         // Show label when name is null OR blank (""), otherwise show the suspect's name

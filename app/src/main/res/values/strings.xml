@@ -16,7 +16,12 @@
     <string name="contacts_permission_rationale">Contacts permission is needed to pick a suspect</string>
     <string name="crime_date_label">Date</string>
     <string name="crime_time_label">Time</string>
+    <string name="crime_report">%1$s! The crime was discovered on %2$s. %3$s, and %4$s</string>
     <string name="crime_report_subject">Crime Report</string>
+    <string name="crime_report_solved">The case is solved</string>
+    <string name="crime_report_unsolved">The case is not solved</string>
+    <string name="crime_report_no_suspect">there is no suspect.</string>
+    <string name="crime_report_suspect">the suspect is %s.</string>
     <string name="crime_report_text">@string/share_crime_report</string>
     <string name="crime_suspect_text">@string/choose_suspect</string>
     <string name="crime_title_hint">Enter a title for the crime.</string>
@@ -31,13 +36,9 @@
     <string name="no_crimes_message">There are no crimes</string>
     <string name="no_phone_for_contact">That contact has no phone number</string>
     <string name="no_suspect">No suspect</string>
+    <string name="send_report">Send crime report via</string>
     <string name="share_crime_report">Share report</string>
     <string name="toast_title_required">Describe the crime before going back</string>
-    <string name="crime_report">
-        Crime: %1$s
-        \nDate: %2$s
-        \nSolved: %3$s
-        \nSuspect: %4$s
-    </string>
+
 
 </resources>
