@@ -7,6 +7,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import androidx.core.view.MenuProvider
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -204,6 +208,30 @@ class CrimeDetailFragment : Fragment() {
                 }
             }
         )
+
+        // Detail toolbar menu: delete action
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_crime_detail, menu)
+            }
+            override fun onMenuItemSelected(item: MenuItem): Boolean {
+                return when (item.itemId) {
+                    R.id.menu_delete_crime -> {
+                        AlertDialog.Builder(requireContext())
+                            .setTitle(R.string.confirm_delete_title)
+                            .setMessage(R.string.confirm_delete_message)
+                            .setNegativeButton(R.string.cancel, null)
+                            .setPositiveButton(R.string.confirm) { _, _ ->
+                                viewModel.deleteCurrent()
+                                findNavController().popBackStack()
+                            }
+                            .show()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner)
     }
 
     override fun onDestroyView() {
@@ -221,11 +249,13 @@ class CrimeDetailFragment : Fragment() {
         return getString(R.string.crime_report, c.title, dateString, solvedString, suspect)
     }
 
-    private fun updateSuspectUi(suspectName: String?, suspectPhone: String?) {
-        binding.chooseSuspect.text = suspectName ?: getString(R.string.choose_suspect)
-        val enabled = !suspectPhone.isNullOrBlank()
-        binding.callSuspect.isEnabled = enabled
-        binding.callSuspect.alpha = if (enabled) 1f else 0.5f
+    private fun updateSuspectUi(name: String?, phone: String?) {
+        // Show label when name is null OR blank (""), otherwise show the suspect's name
+        binding.chooseSuspect.text =
+            if (name.isNullOrBlank()) getString(R.string.crime_suspect_text) else name
+
+        // Enable/disable Call button based on phone availability
+        binding.callSuspect.isEnabled = !phone.isNullOrBlank()
     }
 
     private fun queryDisplayName(contactUri: Uri): String? =

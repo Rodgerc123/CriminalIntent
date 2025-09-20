@@ -26,6 +26,18 @@ class CrimeListViewModel : ViewModel() {
                 initialValue = emptyList()
             )
 
+    suspend fun addCrime(): java.util.UUID {
+        val crime = Crime(
+            id = java.util.UUID.randomUUID(),
+            title = "",
+            date = java.util.Date(),
+            isSolved = false,
+            requiresPolice = false
+        )
+        CrimeRepository.get().upsert(crime)
+        return crime.id
+    }
+
     fun seedIfEmpty() {
         viewModelScope.launch {
             val repo = CrimeRepository.get()

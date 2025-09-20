@@ -58,9 +58,19 @@ class CrimeDetailViewModel : ViewModel() {
     }
 
     fun updateSuspect(name: String?, phone: String?) {
-        val current = _crime.value ?: return
-        val updated = current.copy(suspect = name, suspectPhone = phone)
+        val current = crime.value ?: return
+        val updated = current.copy(
+            suspect = name.orEmpty(),   // <-- coalesce nullable to non-null
+            suspectPhone = phone        // still nullable in your schema
+        )
+
         _crime.value = updated
         viewModelScope.launch { repo.upsert(updated) }
+    }
+    fun deleteCurrent() {
+        val current = crime.value ?: return
+        viewModelScope.launch {
+            CrimeRepository.get().delete(current)
+        }
     }
 }

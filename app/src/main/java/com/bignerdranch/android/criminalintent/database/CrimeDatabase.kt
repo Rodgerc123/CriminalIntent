@@ -12,7 +12,7 @@ import com.bignerdranch.android.criminalintent.Crime
  */
 @Database(
     entities = [Crime::class],
-    version = 2,                 // bumped from 1 → 2
+    version = 3,                 // bumped from 2 → 3
     exportSchema = true
 )
 @TypeConverters(CrimeTypeConverters::class)

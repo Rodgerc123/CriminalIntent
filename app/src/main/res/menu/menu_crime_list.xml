@@ -4,7 +4,8 @@
 
     <item
         android:id="@+id/menu_add_crime"
-        android:title="@string/add_crime"
-        android:icon="@android:drawable/ic_input_add"
-        app:showAsAction="always" />
+        android:title="@string/new_crime"
+    android:icon="@android:drawable/ic_input_add"
+    app:showAsAction="always" />
+
 </menu>
