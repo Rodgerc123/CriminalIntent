@@ -113,6 +113,9 @@ class CrimeDetailFragment : Fragment() {
 
                     binding.crimeSolved.isChecked = loaded.isSolved
                     updateSuspectUi(loaded.suspect, loaded.suspectPhone)
+
+                    // Log to show what’s coming from the ViewModel/Room before UI binding
+                    android.util.Log.d("CrimeDetail", "collect: id=${loaded.id}, title='${loaded.title}', suspect='${loaded.suspect}', phone='${loaded.suspectPhone}'")
                 }
             }
         }
@@ -179,16 +182,38 @@ class CrimeDetailFragment : Fragment() {
             startActivity(Intent.createChooser(send, getString(R.string.share_crime_report)))
         }
 
-        // Choose suspect (keep your existing permission + picker flow)
+        // Choose suspect (permission + picker)
+        binding.chooseSuspect.setOnClickListener {
+            if (hasReadContactsPermission()) {
+                try {
+                    // Launch the AndroidX PickContact contract directly (most compatible)
+                    pickContact.launch(null)
+                } catch (e: android.content.ActivityNotFoundException) {
+                    Toast.makeText(requireContext(), getString(R.string.no_contacts_app), Toast.LENGTH_SHORT).show()
+                }
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)) {
+                AlertDialog.Builder(requireContext())
+                    .setMessage(R.string.contacts_permission_rationale)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        requestReadContacts.launch(Manifest.permission.READ_CONTACTS)
+                    }
+                    .show()
+            } else {
+                requestReadContacts.launch(Manifest.permission.READ_CONTACTS)
+            }
+        }
 
         // Call suspect (read current from VM)
         binding.callSuspect.setOnClickListener {
             val phone = viewModel.crime.value?.suspectPhone
+            // See the number if dialing
+            android.util.Log.d("CrimeDetail", "callClick: enabled=${binding.callSuspect.isEnabled}, phone='${phone ?: ""}'")
             if (phone.isNullOrBlank()) {
-                Toast.makeText(requireContext(), getString(R.string.no_phone_for_contact), Toast.LENGTH_SHORT).show()
-            } else {
-                startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${Uri.encode(phone)}")))
+                android.widget.Toast.makeText(requireContext(), getString(R.string.no_phone_for_contact), android.widget.Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+            startActivity(android.content.Intent(android.content.Intent.ACTION_DIAL, android.net.Uri.parse("tel:${android.net.Uri.encode(phone)}")))
         }
 
         // --- Back block: no untitled crimes ---
@@ -245,18 +270,29 @@ class CrimeDetailFragment : Fragment() {
         val c = current ?: return ""
         val solvedString = if (c.isSolved) getString(android.R.string.yes) else getString(android.R.string.no)
         val dateString = DateFormat.getDateInstance(DateFormat.MEDIUM).format(c.date)
-        val suspect = c.suspect ?: getString(R.string.no_suspect)
+        val suspect = if (c.suspect.isBlank()) getString(R.string.no_suspect) else c.suspect
         return getString(R.string.crime_report, c.title, dateString, solvedString, suspect)
     }
 
     private fun updateSuspectUi(name: String?, phone: String?) {
         // Show label when name is null OR blank (""), otherwise show the suspect's name
+
         binding.chooseSuspect.text =
             if (name.isNullOrBlank()) getString(R.string.crime_suspect_text) else name
 
         // Enable/disable Call button based on phone availability
         binding.callSuspect.isEnabled = !phone.isNullOrBlank()
+
+        // Log to see what the UI is using
+        android.util.Log.d("CrimeDetail", "updateSuspectUi() name='${name ?: ""}', phone='${phone ?: ""}'")
     }
+
+    private fun hasReadContactsPermission(): Boolean =
+        ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.READ_CONTACTS
+        ) == PackageManager.PERMISSION_GRANTED
+
 
     private fun queryDisplayName(contactUri: Uri): String? =
         requireContext().contentResolver.query(

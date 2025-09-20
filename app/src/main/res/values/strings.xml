@@ -27,6 +27,7 @@
     <string name="edit_date_or_time">Edit</string>
     <string name="error_title_required">Please enter a crime title</string>
     <string name="new_crime">@string/add_crime</string>
+    <string name="no_contacts_app">No contacts app available</string>
     <string name="no_crimes_message">There are no crimes</string>
     <string name="no_phone_for_contact">That contact has no phone number</string>
     <string name="no_suspect">No suspect</string>
